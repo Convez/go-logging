@@ -1,0 +1,5 @@
+package gologging
+
+func Hello() {
+
+}
