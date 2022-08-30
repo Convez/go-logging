@@ -13,15 +13,17 @@ type LogSystemBuilder struct {
 	showTimeStamp bool
 	logLevels     []string
 	showFileName  bool
+	showSeverity  bool
 }
 
 func NewLogSystemBuilder() *LogSystemBuilder {
 	return &LogSystemBuilder{
 		destinations:  []io.Writer{os.Stdout},
 		timeFormat:    "2006-01-02T15:04:05.999Z",
-		showTimeStamp: false,
+		showTimeStamp: true,
 		logLevels:     []string{ERROR, WARN, INFO, DEBUG, TRACE},
-		showFileName:  false,
+		showFileName:  true,
+		showSeverity:  true,
 	}
 }
 
@@ -65,16 +67,23 @@ func (l *LogSystemBuilder) WithTimestampFormat(format string) *LogSystemBuilder 
 }
 
 // WithTimestampEnabled allows to enable or disable the addition of the timestamp to the log line
-// Disabled (false) by default
+// Enabled (true) by default
 func (l *LogSystemBuilder) WithTimestampEnabled(enabled bool) *LogSystemBuilder {
 	l.showTimeStamp = enabled
 	return l
 }
 
 // WithFileNameEnabled allows to enable or disable the addition of the file name to the log line
-// Disabled (false) by default
+// Enabled (true) by default
 func (l *LogSystemBuilder) WithFileNameEnabled(enabled bool) *LogSystemBuilder {
 	l.showFileName = enabled
+	return l
+}
+
+// WithSeverityEnabled allows to enable or disable the addition of the log severity to the log line
+// Enabled (true) by default
+func (l *LogSystemBuilder) WithSeverityEnabled(enabled bool) *LogSystemBuilder {
+	l.showSeverity = enabled
 	return l
 }
 
@@ -104,7 +113,6 @@ func (l *LogSystemBuilder) WithAdditionalLevelBelow(newLevel string, belowSeveri
 			newLogs = append(newLogs, newLevel)
 		}
 	}
-	// Default severities are ERROR,WARN,INFO,DEBUG,TRACE
 	l.logLevels = newLogs
 	return l
 }
@@ -119,22 +127,23 @@ func (l *LogSystemBuilder) Build() *LogSystem {
 		writer = timeStampWriter{writer, l.timeFormat}
 	}
 	level := os.Getenv("CONVEZ_LOG_LEVEL")
-	levelMap := map[string]*log.Logger{
-		ERROR: nil,
-		WARN:  nil,
-		INFO:  nil,
-		DEBUG: nil,
-		TRACE: nil,
+	levelMap := map[string]*log.Logger{}
+	for _, level := range l.logLevels {
+		levelMap[level] = nil
 	}
 	if _, ok := levelMap[level]; !ok {
 		level = "INFO"
 	}
 	shouldWrite := true
-	for key := range levelMap {
+	for _, key := range l.logLevels {
+		prefix := ""
+		if l.showSeverity {
+			prefix = fmt.Sprintf("%s: ", key)
+		}
 		if shouldWrite {
-			levelMap[key] = log.New(writer, fmt.Sprintf("%s: ", key), logFlags)
+			levelMap[key] = log.New(writer, prefix, logFlags)
 		} else {
-			levelMap[key] = log.New(io.Discard, fmt.Sprintf("%s: ", key), logFlags)
+			levelMap[key] = log.New(io.Discard, prefix, logFlags)
 		}
 		if key == level {
 			shouldWrite = false
