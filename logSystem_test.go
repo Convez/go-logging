@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	gologging "github.com/Convez/go-logging/pgk"
+	gologging "github.com/Convez/go-logging"
 )
 
 func TestPrintSystemBase(t *testing.T) {
