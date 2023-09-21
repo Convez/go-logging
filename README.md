@@ -2,8 +2,14 @@
 
 Logging library for golang, customizable with custom logging level and targets.
 
-## Usage
 
+## Install
+
+``` bash
+go get github.com/Convez/go-logging
+```
+
+## Usage
 Use the logSystemBuilder to build your logSystem.
 The following builder example uses all available features for the library:
 ```golang
