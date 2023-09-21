@@ -66,6 +66,7 @@ Colors are enabled by default for the logs.
 ![Colors image](assets/colors.png)
 
 Each severity level are associated by default to color:
+
     ERROR: RED
     WARN: YELLOW 
     INFO: GREEN 
