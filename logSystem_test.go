@@ -251,8 +251,8 @@ func TestWithColor(t *testing.T) {
 	printParts := strings.Split(printPartsTotal[0], " ")
 	printPartsError := strings.Split(printPartsTotal[1], " ")
 	t.Log("\n", printed)
-	if len(printParts) != 5 {
-		t.Error("Expecting 5 elements to the log: date-filename-severity-log. Got ", len(printParts), " elements")
+	if len(printParts) != 6 {
+		t.Error("Expecting 6 elements to the log: date-filename-severity-log. Got ", len(printParts), " elements")
 	}
 	if _, err := time.Parse("2006-01-02T15:04:05.999Z", printParts[0]); err != nil {
 		t.Error("Printed time does not respect the 2006-01-02T15:04:05.999Z format: ", printParts[0])
@@ -268,6 +268,9 @@ func TestWithColor(t *testing.T) {
 	}
 	if !strings.HasPrefix(printParts[4], "Hello") {
 		t.Error("Log was not printed correctly. Expected Hello, got: ", printParts[4])
+	}
+	if !strings.HasPrefix(printParts[5], "Info") {
+		t.Error("Log was not printed correctly. Expected Hello, got: ", printParts[5])
 	}
 	t.Log(printPartsError)
 	if printPartsError[2] != gologging.RED {
