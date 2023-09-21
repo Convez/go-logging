@@ -12,8 +12,10 @@ type LogSystemBuilder struct {
 	timeFormat    string
 	showTimeStamp bool
 	logLevels     []string
+	colorMap      map[string]string
 	showFileName  bool
 	showSeverity  bool
+	showColor     bool
 }
 
 func NewLogSystemBuilder() *LogSystemBuilder {
@@ -22,8 +24,10 @@ func NewLogSystemBuilder() *LogSystemBuilder {
 		timeFormat:    "2006-01-02T15:04:05.999Z",
 		showTimeStamp: true,
 		logLevels:     []string{ERROR, WARN, INFO, DEBUG, TRACE},
+		colorMap:      map[string]string{ERROR: RED, WARN: YELLOW, INFO: GREEN, DEBUG: WHITE, TRACE: CYAN},
 		showFileName:  true,
 		showSeverity:  true,
+		showColor:     true,
 	}
 }
 
@@ -87,6 +91,20 @@ func (l *LogSystemBuilder) WithSeverityEnabled(enabled bool) *LogSystemBuilder {
 	return l
 }
 
+// WithColorEnabled allows to enable or disable the color the log line
+// Enabled (true) by default
+func (l *LogSystemBuilder) WithColorEnabled(enabled bool) *LogSystemBuilder {
+	l.showColor = enabled
+	return l
+}
+
+// WithSeverityColor updates the color of the log line for a given severity
+// Color is in ANSI color escape sequence, ex: "\033[0m"
+func (l *LogSystemBuilder) WithSeverityColor(level string, newColor string) *LogSystemBuilder {
+	l.colorMap[level] = newColor
+	return l
+}
+
 // WithAdditionalLevelAbove allows to add a custom log level of a severity superior to one of the existing ones
 // ex. newLevel = CUSTOM aboveSeverity = INFO will add the CUSTOM severity between INFO and WARN
 // Default severities are ERROR,WARN,INFO,DEBUG,TRACE
@@ -99,6 +117,7 @@ func (l *LogSystemBuilder) WithAdditionalLevelAbove(newLevel string, aboveSeveri
 		newLogs = append(newLogs, log)
 	}
 	l.logLevels = newLogs
+	l.colorMap[newLevel] = WHITE
 	return l
 }
 
@@ -114,6 +133,7 @@ func (l *LogSystemBuilder) WithAdditionalLevelBelow(newLevel string, belowSeveri
 		}
 	}
 	l.logLevels = newLogs
+	l.colorMap[newLevel] = WHITE
 	return l
 }
 
@@ -122,6 +142,7 @@ func (l *LogSystemBuilder) Build() *LogSystem {
 	if l.showFileName {
 		logFlags = logFlags | log.Lshortfile
 	}
+	logFlags = logFlags & ^log.Lmsgprefix
 	writer := io.MultiWriter(l.destinations...)
 	if l.showTimeStamp {
 		writer = timeStampWriter{writer, l.timeFormat}
@@ -136,9 +157,12 @@ func (l *LogSystemBuilder) Build() *LogSystem {
 	}
 	shouldWrite := true
 	for _, key := range l.logLevels {
-		prefix := ""
+		prefix := " "
 		if l.showSeverity {
 			prefix = fmt.Sprintf("%s: ", key)
+		}
+		if l.showColor {
+			prefix = fmt.Sprintf("%s %s", l.colorMap[key], prefix)
 		}
 		if shouldWrite {
 			levelMap[key] = log.New(writer, prefix, logFlags)

@@ -12,5 +12,5 @@ type timeStampWriter struct {
 }
 
 func (t timeStampWriter) Write(bytes []byte) (int, error) {
-	return t.writer.Write([]byte(fmt.Sprintf("%s %s", time.Now().UTC().Format(t.timeFormat), string(bytes))))
+	return t.writer.Write([]byte(fmt.Sprintf("%s %s %s", time.Now().UTC().Format(t.timeFormat), string(bytes), RESET)))
 }

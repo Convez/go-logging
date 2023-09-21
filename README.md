@@ -23,7 +23,8 @@ builder := gologging.NewLogSystemBuilder().
     WithTimestampFormat("yyyy-MM-dd*HH:mm:ss"). // Changes the timestamp format
     WithFileNameEnabled(false).  // Removes file name from log line
     WithSeverityEnabled(false).  // Remove severity from log line
-    WithTimestampEnabled(false)  // Removes the timestamp from log line
+    WithTimestampEnabled(false).  // Removes the timestamp from log line
+    WithColorEnabled(false)      // Removes colors from line messages
 
 logSystem := builder.Build()
 ```
@@ -58,3 +59,38 @@ Default settings:
     logLevels:     []string{ERROR, WARN, INFO, DEBUG, TRACE},
     showFileName:  true,
     showSeverity:  true,
+
+## Colors
+Colors are enabled by default for the logs.
+
+![Colors image](assets/colors.png)
+
+Each severity level are associated by default to color:
+    ERROR: RED
+    WARN: YELLOW 
+    INFO: GREEN 
+    DEBUG: WHITE 
+    TRACE: CYAN
+
+The color associated to a severity level can be updated when building the logSystem:
+
+```golang
+builder = builder.WithSeverityColor(INFO, PURPLE)
+```
+Alternatively to the default available colors, an ANSI color escape sequence can be used:
+
+```golang
+builder = builder.WithSeverityColor(INFO, "\033[36m")
+```
+
+Default available colors:
+
+	RESET (no color):   "\033[0m"
+	RED:                "\033[31m"
+	GREEN:              "\033[32m"
+	YELLOW:             "\033[33m"
+	BLUE:               "\033[34m"
+	PURPLE:             "\033[35m"
+	CYAN:               "\033[36m"
+	GRAY:               "\033[37m"
+	WHITE:              "\033[97m"
